@@ -7,9 +7,26 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+      backgroundColor: {
+        primary: '#dda8a8',
+        secondary: '#efede1',
+        tertiary: "#ba8585",
+        accent: "#edcccc",
+      },
+      textColor: {
+        primary: '#dda8a8',
+        secondary: '#efede1',
+        tertiary: "#ba8585",
+        accent: "#edcccc",
+      },
+      borderColor: {
+        primary: '#dda8a8',
+        secondary: '#efede1',
+        tertiary: "#ba8585",
+        accent: "#edcccc",
+      },
+      fontFamily: {
+        sacramento: ['Sacramento', 'sans-serif'],
       },
     },
   },

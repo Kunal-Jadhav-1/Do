@@ -1,101 +1,145 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+import logo from "../app/images/logo.png"
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentTaskIndex, setCurrentTaskIndex] = useState(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const handleAddTask = (e) => {
+    e.preventDefault();
+    if (title && date && time) {
+      const deadline = `${date}T${time}`;
+      if (isEditing) {
+        // Update task
+        const updatedTasks = [...tasks];
+        updatedTasks[currentTaskIndex] = { title, deadline, date, time };
+        // Sort tasks by deadline
+        updatedTasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        setTasks(updatedTasks);
+        setIsEditing(false);
+        setCurrentTaskIndex(null);
+      } else {
+        // Add new task
+        const newTasks = [...tasks, { title, deadline, date, time }];
+        // Sort tasks by deadline
+        newTasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        setTasks(newTasks);
+      }
+      setTitle('');
+      setDate('');
+      setTime('');
+    }
+  };
+
+  const handleEditTask = (index) => {
+    const task = tasks[index];
+    setTitle(task.title);
+    setDate(task.date);
+    setTime(task.time);
+    setIsEditing(true);
+    setCurrentTaskIndex(index);
+  };
+
+  const handleDeleteTask = (index) => {
+    setTasks(tasks.filter((_, i) => i !== index));
+  };
+
+  // Automatically delete tasks when their deadline arrives
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setTasks((currentTasks) =>
+        currentTasks.filter(
+          (task) => new Date(task.deadline).getTime() > now.getTime()
+        )
+      );
+    }, 1000); // Check every second
+
+    return () => clearInterval(interval); // Cleanup on component unmount
+  }, []);
+
+  return (
+    <div className="flex min-h-screen p-4 bg-secondary text-secondary font-sacramento">
+      <div className="w-1/2 bg-primary shadow-md rounded-lg p-4">
+        <h2 className="text-4xl font-bold mb-4">Task List</h2>
+        {tasks.length > 0 ? (
+          <ul className="space-y-2">
+            {tasks.map((task, index) => (
+              <li
+                key={index}
+                className="p-4 border border-secondary rounded shadow-sm flex justify-between items-center"
+              >
+                <div>
+                  <p className="font-extrabold text-2xl mb-2">{task.title}</p>
+                  <p className=" text-lg"><span className='font-semibold'>Date : </span> {task.date}</p>
+                  <p className=" text-lg"><span className='font-semibold'> Time : </span>{task.time}</p>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEditTask(index)}
+                    className="px-4 py-3 bg-accent text-tertiary rounded"
+                  >
+                    <FaEdit/>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTask(index)}
+                    className="px-4 py-3 bg-accent text-tertiary rounded"
+                  >
+                    <FaTrash/>
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-2xl underline mx-10">No tasks</p>
+        )}
+      </div>
+
+      <div className="w-1/2 bg-primary shadow-md rounded-lg p-4 ml-4">
+        <h2 className="text-4xl font-bold mb-4">{isEditing ? 'Edit Task' : 'Add Task'}</h2>
+        <form onSubmit={handleAddTask} className="space-y-4">
+          <div>
+            <label className="block font-medium mb-1 text-2xl">Task</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full border rounded px-2 py-1 bg-secondary text-primary text-lg font-semibold"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+          <div>
+            <label className="block font-medium mb-1 text-2xl">Date</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full border rounded px-2 py-1 bg-secondary text-primary text-lg font-semibold"
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1 text-2xl">Time</label>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="w-full border rounded px-2 py-1 bg-secondary text-primary text-lg font-semibold"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 text-tertiary rounded text-2xl w-full bg-accent font-bold"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            {isEditing ? 'Update Task' : 'Add Task'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

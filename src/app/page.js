@@ -18,9 +18,13 @@ export default function Home() {
     emailjs
       .send(
         "service_f6odq07",
-        "template_al10lme",
-        { to_email: toEmail, subject, message },
-        "AcjjcoXbKXk4xTFrh"
+        "template_al10lme", 
+        {
+          to_email: toEmail, 
+          subject,
+          message,
+        },
+        "AcjjcoXbKXk4xTFrh" // Public Key
       )
       .then(
         (result) => {
@@ -99,7 +103,7 @@ export default function Home() {
                 key={index}
                 className="p-4 border border-secondary rounded shadow-sm flex justify-between items-center"
               >
-                <div>
+                <div className='w-[70%]'>
                   <p className="font-extrabold text-xl sm:text-2xl mb-2">{task.title}</p>
                   <p className="text-lg"><span className="font-semibold">Date: </span>{task.date}</p>
                   <p className="text-lg"><span className="font-semibold">Time: </span>{task.time}</p>
